@@ -1,12 +1,5 @@
-import discord
-from discord.ext import commands
+import setup
 
-# Create a bot instance
-intents = discord.Intents.all()
-intents.members = True  # This enables member updates
-bot = commands.Bot(command_prefix='!', intents=intents)
-
-# Event when the bot has successfully connected
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')  # This will print when the bot starts
@@ -31,8 +24,10 @@ async def on_command_error(ctx, error):
     print(f"Error occurred: {error}")
     await ctx.send("Sorry, there was an error with the command!")
 
-# Run the bot with your token
-bot.run('MTMxODkzMjU5Njg1NTQwNjYyMw.G0TaIb.0jmK-thJQLe7ujzOzsRHsM1CjAx_Boip4HZkmY')  # Replace 'YOUR_BOT_TOKEN' with your actual token
+bot = setup.init()
 
 # ideas: 
 # - machine learning swear filter
+# - christmas countdown
+# - blocked website checker
+# - 
