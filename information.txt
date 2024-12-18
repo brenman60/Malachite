@@ -1,2 +1,3 @@
 application id: 1318932596855406623
 public key: cd27508b80d201c71d70ef2b66560fe3de7f2595160200c371e82748ee04d35b
+token: MTMxODkzMjU5Njg1NTQwNjYyMw.G0TaIb.0jmK-thJQLe7ujzOzsRHsM1CjAx_Boip4HZkmY
