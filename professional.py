@@ -26,8 +26,13 @@ async def on_command_error(ctx, error):
 
 bot = setup.init()
 
-# ideas: 
-# - machine learning swear filter
-# - christmas countdown
-# - blocked website checker
-# - 
+# apparently can host on Replit, Heroku, or Railway
+# ideas: (~ = haven't started, % = in progress, {} = completed)
+# ~ !resume
+# ~ !skills
+# ~ !help
+# ~ !linkedin
+# ~ !github
+# ~ !stats [username]
+# ~ !project [project name]
+# ~ !project [help]
