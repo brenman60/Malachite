@@ -14,7 +14,7 @@ async def on_ready():
 # A simple command
 @bot.command()
 async def hello(ctx):
-    await ctx.send("i just realized you can probably use discord bots to be able to read and send message on chromebook")
+    await ctx.send("dassssssssssssssssssssssssssssssss")
 
 @bot.event
 async def on_message(message):
@@ -33,3 +33,6 @@ async def on_command_error(ctx, error):
 
 # Run the bot with your token
 bot.run('MTMxODkzMjU5Njg1NTQwNjYyMw.G0TaIb.0jmK-thJQLe7ujzOzsRHsM1CjAx_Boip4HZkmY')  # Replace 'YOUR_BOT_TOKEN' with your actual token
+
+# ideas: 
+# - machine learning swear filter
