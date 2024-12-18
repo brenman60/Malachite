@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 # Create a bot instance
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 intents.members = True  # This enables member updates
 bot = commands.Bot(command_prefix='!', intents=intents)
 
@@ -14,7 +14,7 @@ async def on_ready():
 # A simple command
 @bot.command()
 async def hello(ctx):
-    await ctx.send("Hello, world!")
+    await ctx.send("i just realized you can probably use discord bots to be able to read and send message on chromebook")
 
 @bot.event
 async def on_message(message):
