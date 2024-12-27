@@ -20,5 +20,20 @@ class Help(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    async def config(self, ctx, action, key, value = None):
+        actions = ["get", "set", "help"]
+        if action not in actions:
+            return await ctx.send(f"Unrecognized action '{action}'")
+        
+        match action:
+            case "get":
+                return ""
+            case "set":
+                return ""
+            case "help":
+                return ""
+            case _:
+                return ""
+
 async def setup(bot):
     await bot.add_cog(Help(bot))
