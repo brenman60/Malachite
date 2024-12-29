@@ -5,6 +5,7 @@ class Links(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    # Sends message containing information for the LinkedIn page.
     @commands.command(name="linkedin", description="Displays LinkedIn page", aliases=["li"])
     async def linkedin(self, ctx):
         embed = discord.Embed()
@@ -14,6 +15,7 @@ class Links(commands.Cog):
         embed.set_thumbnail(url="https://cdn-icons-png.freepik.com/256/3991/3991775.png?semt=ais_hybrid")
         await ctx.send(embed=embed)
 
+    # Sends message containing information for the GitHub page.
     @commands.command(name="github", description="Displays GitHub page", aliases=["gh"])
     async def github(self, ctx):
         embed = discord.Embed()

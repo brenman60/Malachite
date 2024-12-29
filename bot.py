@@ -3,15 +3,18 @@ import asyncio
 
 bot = setup.init()
 
+# Signifies that the bot is active.
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} and ready!")
 
+# Catches all errors the bot encounters and relays them to the appropriate Discord channel.
 @bot.event
 async def on_command_error(ctx, error):
     print(f"Error occurred: {error}")
     await ctx.send(f"An error occurred running the command... ({error})")
 
+# Sets up the bot using setup.py.
 async def main():
     await setup.run(bot)
     
@@ -23,9 +26,10 @@ if __name__ == "__main__":
 
 # apparently can host on Replit, Heroku, or Railway
 # ideas: (~ = haven't started, % = in progress, {} = completed, <> = notes, -= =- = description)
+# ~ make config & mods per server (default_config.json being copied into config.json for first time server)
 # ~ !resume
 # ~ !skills
-# % !help
+# {} !help
 # {} !linkedin
 # {} !github
 # % !stats [username]

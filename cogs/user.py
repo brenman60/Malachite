@@ -13,6 +13,7 @@ class User(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    # Sends message displaying a user's stats within the Discord server. Users level up by interacting in the server.
     @commands.command(name="stats", description="Displays user [username]'s server stats")
     async def stats(self, ctx, target: Optional[Member]):
         async with ctx.channel.typing():
@@ -29,6 +30,7 @@ class User(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    # Promotes a user to moderator status. Allows heightened actions from them.
     @commands.command(name="mod", description="Mods user [username]")
     async def mod(self, ctx, target: Optional[Member]):
         if target is None:
@@ -43,6 +45,13 @@ class User(commands.Cog):
         elif str(target.id) in mods and mods[str(target.id)] == "mod":
             await ctx.send(f"{target.mention} is already modded.")
         
+    # Demotes a user from moderator status. Turns them back into a normal user.
+    @commands.command(name="unmod", description="Unmods user [username]")
+    async def unmod(self, ctx, target: Optional[Member]):
+        if target is None:
+            return
+
+    # Returns current mods list JSON object.
     def read_mods(self):
         try:
             with open(self.mods_filepath, "r") as file:
@@ -50,6 +59,7 @@ class User(commands.Cog):
         except FileNotFoundError:
             return {}
 
+    # Writes over the mods list JSON file with new data.
     def write_mods(self, data):
         os.makedirs(os.path.dirname(self.mods_filepath), exist_ok=True)
         with open(self.mods_filepath, "w") as file:

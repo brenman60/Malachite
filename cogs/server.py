@@ -9,6 +9,7 @@ class Server(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    # Sends message containing information about the current Discord server.
     @commands.command(name="server", description="Displays current server's stats")
     async def server(self, ctx):
         async with ctx.channel.typing():
@@ -25,6 +26,7 @@ class Server(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    # Callback for when new users are added to the current Discord server.
     @commands.Cog.listener()
     async def on_member_join(self, member):
         channel = member.guild.system_channel
