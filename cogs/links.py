@@ -25,5 +25,15 @@ class Links(commands.Cog):
         embed.set_thumbnail(url="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png")
         await ctx.send(embed=embed)
 
+    # Sends message containing information for the portfolio page.
+    @commands.command(name="portfolio", description="Displays Portfolio page", aliases=["resume", "pf"])
+    async def portfolio(self, ctx):
+        embed = discord.Embed()
+        embed.title = "Portfolio Page"
+        embed.url = "https://brenman60.github.io/portfolio/"
+        embed.color = discord.Color.blue()
+        embed.set_thumbnail(url="https://steamuserimages-a.akamaihd.net/ugc/2354888042055965527/751F2CC84C8EF889315DD53385E52CAB2593A744/?imw=512&&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false")
+        await ctx.send(embed=embed)
+
 async def setup(bot):
     await bot.add_cog(Links(bot))

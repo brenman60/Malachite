@@ -31,13 +31,13 @@ class Help(commands.Cog):
         
         match action:
             case "get":
-                config_value = config.get_config(key)
+                config_value = config.get_config(ctx.guild.id, key)
                 if config_value == "":
                     await ctx.send(f"Not config [{key}] found.")
                 else:
-                    await ctx.send(f"[{key}]: {config.get_config(key)}")
+                    await ctx.send(f"[{key}]: {config.get_config(ctx.guild.id, key)}")
             case "set":
-                changed = config.set_config(key, value)
+                changed = config.set_config(ctx.guild.id, key, value)
                 if changed:
                     await ctx.send(f"Successfully changed [{key}].")
                 else:

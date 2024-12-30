@@ -1,5 +1,6 @@
 import setup
 import asyncio
+import config
 
 bot = setup.init()
 
@@ -7,6 +8,14 @@ bot = setup.init()
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} and ready!")
+
+    for guild in bot.guilds:
+        config.init_config(guild.id)
+
+# Adds the default bot configuration to the main config file when joining a new server.
+@bot.event
+async def on_guild_join(self, guild):
+    config.init_config(guild.id)
 
 # Catches all errors the bot encounters and relays them to the appropriate Discord channel.
 @bot.event
@@ -23,18 +32,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-# apparently can host on Replit, Heroku, or Railway
-# ideas: (~ = haven't started, % = in progress, {} = completed, <> = notes, -= =- = description)
-# ~ make config & mods per server (default_config.json being copied into config.json for first time server)
-# ~ !resume
-# ~ !skills
-# {} !help
-# {} !linkedin
-# {} !github
-# % !stats [username]
-# % !server
-# ~ !project [project name]
-# ~ !project [help]
-# ~ !gamble <rename needed> -= small game revolving around money or something. money stored in JSON file probably for each person... unless Discord has specific userdata or something =-
-# ~ !generateName -= makes random type of name like those websites =-

@@ -36,13 +36,20 @@ class User(commands.Cog):
         if target is None:
             return
 
-        mods = self.read_mods()
+        target_id = str(target.id)
+        user_id = str(ctx.author.id)
+        mods = self.read_mods(ctx.guild.id)
+        print(mods)
 
-        if (str(target.id) in mods and mods[str(target.id)] != "mod") or (str(target.id) not in mods):
-            mods[str(target.id)] = "mod"
-            self.write_mods(mods)
+        target_is_mod = target_id in mods and mods[target_id] == "mod"
+        user_is_owner = user_id == str(ctx.guild.owner_id)
+        user_is_mod = (user_id in mods and mods[user_id] == "mod") or user_is_owner
+
+        if not target_is_mod and user_is_mod:
+            mods[target_id] = "mod"
+            self.write_mods(ctx.guild.id, mods)
             await ctx.send(f"{target.mention} has been added as a mod.")
-        elif str(target.id) in mods and mods[str(target.id)] == "mod":
+        elif target_is_mod and user_is_mod:
             await ctx.send(f"{target.mention} is already modded.")
         
     # Demotes a user from moderator status. Turns them back into a normal user.
@@ -50,20 +57,50 @@ class User(commands.Cog):
     async def unmod(self, ctx, target: Optional[Member]):
         if target is None:
             return
+        
+        target_id = str(target.id)
+        user_id = str(ctx.author.id)
+        mods = self.read_mods(ctx.guild.id)
+
+        target_is_mod = target_id in mods and mods[target_id] == "mod"
+        user_is_owner = user_id == str(ctx.guild.owner_id)
+        user_is_mod = (user_id in mods and mods[user_id] == "mod") or user_is_owner
+
+        if target_is_mod and user_is_mod:
+            del mods[target_id]
+            self.write_mods(ctx.guild.id, mods)
+            await ctx.send(f"{target.mention} as been unmodded.")
+        elif not target_is_mod and user_is_mod:
+            await ctx.send(f"{target.mention} is not a mod!")
+        elif target_id == user_id:
+            await ctx.send(f"You cannot unmod yourself!")
 
     # Returns current mods list JSON object.
-    def read_mods(self):
+    def read_mods(self, id):
         try:
             with open(self.mods_filepath, "r") as file:
-                return json.load(file)
-        except FileNotFoundError:
+                data = json.load(file)
+                return data[str(id)]
+        except:
             return {}
 
-    # Writes over the mods list JSON file with new data.
-    def write_mods(self, data):
+    # Writes over the mods list JSON file with new data. Contains extra checks for make sure mods file exists before writing to it.
+    def write_mods(self, id, data):
+        id = str(id)
+
+        current_mods = ""
         os.makedirs(os.path.dirname(self.mods_filepath), exist_ok=True)
+
+        if not os.path.exists(self.mods_filepath):
+            with open(self.mods_filepath, "w") as file:
+                json.dump({}, file, indent=4)
+
+        with open(self.mods_filepath, "r") as file:
+                current_mods = json.load(file)
+
+        current_mods[id] = data
         with open(self.mods_filepath, "w") as file:
-            json.dump(data, file, indent=4)
+            json.dump(current_mods, file, indent=4)
 
 async def setup(bot):
     await bot.add_cog(User(bot))
