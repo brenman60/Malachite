@@ -75,6 +75,14 @@ class User(commands.Cog):
         elif target_id == user_id:
             await ctx.send(f"You cannot unmod yourself!")
 
+    # Bans a user from the current Discord server. User can only join back once unbanned.
+    @commands.command(name="unmod", description="Unmods user [username]")
+    async def ban(self, ctx, target: Optional[Member]):
+        if target is None:
+            return
+        
+        
+
     # Returns current mods list JSON object.
     def read_mods(self, id):
         try:
