@@ -13,6 +13,11 @@ class User(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    # Returns bool based on whether given user is within the mods json.
+    def is_user_mod(self, ctx, user: Member):
+        mods = self.read_mods(ctx.guild.id)
+        return (user.id in mods) or (user.id == ctx.guild.owner_id)
+
     # Sends message displaying a user's stats within the Discord server. Users level up by interacting in the server.
     @commands.command(name="stats", description="Displays user [username]'s server stats")
     async def stats(self, ctx, target: Optional[Member]):
@@ -37,16 +42,13 @@ class User(commands.Cog):
             return
 
         target_id = str(target.id)
-        user_id = str(ctx.author.id)
         mods = self.read_mods(ctx.guild.id)
-        print(mods)
 
-        target_is_mod = target_id in mods and mods[target_id] == "mod"
-        user_is_owner = user_id == str(ctx.guild.owner_id)
-        user_is_mod = (user_id in mods and mods[user_id] == "mod") or user_is_owner
+        target_is_mod = target_id in mods
+        user_is_mod = self.is_user_mod(ctx, ctx.author)
 
         if not target_is_mod and user_is_mod:
-            mods[target_id] = "mod"
+            mods.append(target_id)
             self.write_mods(ctx.guild.id, mods)
             await ctx.send(f"{target.mention} has been added as a mod.")
         elif target_is_mod and user_is_mod:
@@ -62,26 +64,46 @@ class User(commands.Cog):
         user_id = str(ctx.author.id)
         mods = self.read_mods(ctx.guild.id)
 
-        target_is_mod = target_id in mods and mods[target_id] == "mod"
-        user_is_owner = user_id == str(ctx.guild.owner_id)
-        user_is_mod = (user_id in mods and mods[user_id] == "mod") or user_is_owner
+        target_is_mod = target_id in mods
+        user_is_mod = self.is_user_mod(ctx, ctx.author)
 
-        if target_is_mod and user_is_mod:
-            del mods[target_id]
+        if target_id == user_id:
+            await ctx.send(f"You cannot unmod yourself!")
+        elif target_is_mod and user_is_mod:
+            mods.remove(target_id)
             self.write_mods(ctx.guild.id, mods)
             await ctx.send(f"{target.mention} as been unmodded.")
         elif not target_is_mod and user_is_mod:
             await ctx.send(f"{target.mention} is not a mod!")
-        elif target_id == user_id:
-            await ctx.send(f"You cannot unmod yourself!")
 
     # Bans a user from the current Discord server. User can only join back once unbanned.
-    @commands.command(name="unmod", description="Unmods user [username]")
-    async def ban(self, ctx, target: Optional[Member]):
-        if target is None:
+    @commands.command(name="ban", description="Bans user [username]")
+    @commands.has_permissions(ban_members = True)
+    async def ban(self, ctx, target: Member, reason: Optional[str]):
+        if target is ctx.author:
+            await ctx.send(f"You cannot ban yourself!")
             return
         
-        
+        if reason is None:
+            reason = "None provided"
+
+        await target.ban(reason = reason)
+        print(f"Banning: {target}")
+
+    # Bans a user from the current Discord server. User can only join back once unbanned.
+    @commands.command(name="unban", description="Unbans user [username]")
+    @commands.has_permissions(ban_members = True)
+    async def unban(self, ctx, target: Member):
+        banned_users = await ctx.guild.bans()
+        member_name, member_discriminator = target.split("#")
+
+        for ban_entry in banned_users:
+            user = ban_entry.user
+
+            if (user.name, user.discriminator) == (member_name, member_discriminator):
+                await ctx.guild.unban(user)
+                await ctx.send(f'Unbanned {user.mention}')
+                return
 
     # Returns current mods list JSON object.
     def read_mods(self, id):
@@ -90,7 +112,7 @@ class User(commands.Cog):
                 data = json.load(file)
                 return data[str(id)]
         except:
-            return {}
+            return []
 
     # Writes over the mods list JSON file with new data. Contains extra checks for make sure mods file exists before writing to it.
     def write_mods(self, id, data):

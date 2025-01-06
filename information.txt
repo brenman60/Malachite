@@ -6,5 +6,4 @@ bots:
 - Pylance
 - Python
 - Python Debugger
-- Console Ninja
 - Prettier
