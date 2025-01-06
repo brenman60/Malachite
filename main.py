@@ -1,6 +1,10 @@
 import setup
 import asyncio
 import config
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 bot = setup.init()
 
@@ -28,7 +32,8 @@ async def main():
     await setup.run(bot)
     
     async with bot:
-        await bot.start('MTMxODkzMjU5Njg1NTQwNjYyMw.G0TaIb.0jmK-thJQLe7ujzOzsRHsM1CjAx_Boip4HZkmY')
+        TOKEN = os.getenv("DISCORD_BOT_SECRET")
+        await bot.start(str(TOKEN))
 
 if __name__ == "__main__":
     asyncio.run(main())
