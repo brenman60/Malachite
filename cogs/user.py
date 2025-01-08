@@ -35,8 +35,41 @@ class User(commands.Cog):
     async def on_message(self, message):
         if message.author == self.bot.user:
             return
+
+        user = message.author
+
+        stats = self.read_stats(message.guild.id)
+        player_stats = None
+        if str(user.id) in stats:
+            player_stats = stats[str(user.id)]
+        else:
+            player_stats = {"lvl": 0, "exp": 0}
+
+        exp_requirement = player_stats["lvl"] ** 2
+        player_stats["exp"] += len(message.clean_content)
         
-        print(message.author)
+        player_did_levelup = False
+        while player_stats["exp"] >= exp_requirement:
+            player_stats["exp"] -= exp_requirement
+            player_stats["lvl"] += 1
+            exp_requirement = player_stats["lvl"] ** 2
+            player_did_levelup = True
+
+        if player_did_levelup:
+            embed = discord.Embed()
+            embed.title = f"{f"{user.display_name}'" if user.display_name[-1] == "s" else f"{user.display_name}'s"} Stats"
+            embed.color = user.accent_color
+            embed.timestamp = datetime.now()
+            embed.set_thumbnail(url=user.avatar.url)
+            embed.add_field(name="Level:", value=player_stats["lvl"], inline=True)
+            embed.add_field(name="Experience:", value=player_stats["exp"], inline=True)
+            embed.add_field(name="Next Level's Experience:", value=exp_requirement, inline=True)
+
+            await message.channel.send(embed=embed)
+
+        stats[str(user.id)] = player_stats
+
+        self.write_stats(message.guild.id, stats)
 
     # Returns current stats list JSON object.
     def read_stats(self, id):
@@ -45,7 +78,7 @@ class User(commands.Cog):
                 data = json.load(file)
                 return data[str(id)]
         except:
-            return []
+            return {}
 
     # Writes over the stats list JSON file with new data. Contains extra checks for make sure stats file exists before writing to it.
     def write_stats(self, id, data):
@@ -77,7 +110,6 @@ class User(commands.Cog):
             reason = "None provided"
 
         await target.ban(reason = reason)
-        print(f"Banning: {target}")
 
     # Bans a user from the current Discord server. User can only join back once unbanned.
     @commands.command(name="unban", description="Unbans user [username]")
@@ -93,6 +125,19 @@ class User(commands.Cog):
                 await ctx.guild.unban(user)
                 await ctx.send(f'Unbanned {user.mention}')
                 return
+            
+    # Kicks a user from the current Discord server.
+    @commands.command(name="kick", description="Kicks user [username]")
+    @commands.has_permissions(kick_members = True)
+    async def kick(self, ctx, target: Member, reason: Optional[str]):
+        if target is ctx.author:
+            await ctx.send(f"You cannot kick yourself!")
+            return
+
+        if reason is None:
+            reason = "None provided"
+
+        await target.kick(reason=reason)
 
 async def setup(bot):
     await bot.add_cog(User(bot))
