@@ -9,6 +9,7 @@ import os
 
 class User(commands.Cog):
     stats_filepath = os.path.join(os.path.dirname(__file__), "../data/user_stats.json")
+    leveling_factor = 2
 
     def __init__(self, bot):
         self.bot = bot
@@ -45,14 +46,14 @@ class User(commands.Cog):
         else:
             player_stats = {"lvl": 0, "exp": 0}
 
-        exp_requirement = player_stats["lvl"] ** 2
+        exp_requirement = player_stats["lvl"] ** self.leveling_factor
         player_stats["exp"] += len(message.clean_content)
         
         player_did_levelup = False
         while player_stats["exp"] >= exp_requirement:
             player_stats["exp"] -= exp_requirement
             player_stats["lvl"] += 1
-            exp_requirement = player_stats["lvl"] ** 2
+            exp_requirement = player_stats["lvl"] ** self.leveling_factor
             player_did_levelup = True
 
         if player_did_levelup:
