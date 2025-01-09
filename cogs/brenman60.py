@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-class Links(commands.Cog):
+class brenman60(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -36,4 +36,4 @@ class Links(commands.Cog):
         await ctx.send(embed=embed)
 
 async def setup(bot):
-    await bot.add_cog(Links(bot))
+    await bot.add_cog(brenman60(bot))
