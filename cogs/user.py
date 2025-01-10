@@ -9,25 +9,35 @@ import os
 
 class User(commands.Cog):
     stats_filepath = os.path.join(os.path.dirname(__file__), "../data/user_stats.json")
-    leveling_factor = 2
+    leveling_factor = 5
 
     def __init__(self, bot):
         self.bot = bot
 
     # Sends message displaying a user's stats within the Discord server. Users level up by interacting in the server.
     @commands.command(name="stats", description="Displays user [username]'s server stats")
-    async def stats(self, ctx, target: Optional[Member]):
+    async def stats(self, ctx, user: Optional[Member]):
         async with ctx.channel.typing():
-            await asyncio.sleep(2)
+            await asyncio.sleep(0.5)
         
-        target = target or ctx.author
+        user = user or ctx.author
+
+        stats = self.read_stats(ctx.guild.id)
+        player_stats = None
+        if str(user.id) in stats:
+            player_stats = stats[str(user.id)]
+        else:
+            player_stats = {"lvl": 0, "exp": 0}
+
+        exp_requirement = player_stats["lvl"] * self.leveling_factor
 
         embed = discord.Embed()
-        embed.title = f"{target.name}'s Server Stats"
-        embed.url = ""
-        embed.color = discord.Color.blue()
+        embed.title = f"{f"{user.display_name}'" if user.display_name[-1] == "s" else f"{user.display_name}'s"} Stats"
+        embed.color = user.accent_color
         embed.timestamp = datetime.now()
-        embed.set_thumbnail(url=target.avatar)
+        embed.set_thumbnail(url=user.avatar.url)
+        embed.add_field(name="Level:", value=player_stats["lvl"], inline=True)
+        embed.add_field(name="Level Up Progress", value=f"{round((player_stats["exp"] / exp_requirement) * 100)}%")
 
         await ctx.send(embed=embed)
     
@@ -46,27 +56,18 @@ class User(commands.Cog):
         else:
             player_stats = {"lvl": 0, "exp": 0}
 
-        exp_requirement = player_stats["lvl"] ** self.leveling_factor
+        exp_requirement = player_stats["lvl"] * self.leveling_factor
         player_stats["exp"] += len(message.clean_content)
         
         player_did_levelup = False
         while player_stats["exp"] >= exp_requirement:
             player_stats["exp"] -= exp_requirement
             player_stats["lvl"] += 1
-            exp_requirement = player_stats["lvl"] ** self.leveling_factor
+            exp_requirement = player_stats["lvl"] * self.leveling_factor
             player_did_levelup = True
 
         if player_did_levelup:
-            embed = discord.Embed()
-            embed.title = f"{f"{user.display_name}'" if user.display_name[-1] == "s" else f"{user.display_name}'s"} Stats"
-            embed.color = user.accent_color
-            embed.timestamp = datetime.now()
-            embed.set_thumbnail(url=user.avatar.url)
-            embed.add_field(name="Level:", value=player_stats["lvl"], inline=True)
-            embed.add_field(name="Experience:", value=player_stats["exp"], inline=True)
-            embed.add_field(name="Next Level's Experience:", value=exp_requirement, inline=True)
-
-            await message.channel.send(embed=embed)
+            await message.channel.send(f"{user.mention} is now level {player_stats["lvl"]}!")
 
         stats[str(user.id)] = player_stats
 

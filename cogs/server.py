@@ -18,11 +18,12 @@ class Server(commands.Cog):
     @commands.command(name="server", description="Displays current server's stats")
     async def server(self, ctx):
         async with ctx.channel.typing():
-            await asyncio.sleep(2)
+            await asyncio.sleep(0.5)
         
         icon = ctx.guild.icon.url if ctx.guild.icon != None else "https://cdn-icons-png.flaticon.com/512/25/25400.png"
 
         stats = self.read_stats(ctx.guild.id)
+        exp_requirement = stats["lvl"] * self.leveling_factor
 
         embed = discord.Embed()
         embed.title = f"{ctx.guild.name} Stats"
@@ -32,8 +33,7 @@ class Server(commands.Cog):
         embed.set_thumbnail(url=icon)
         embed.add_field(name="Members:", value=ctx.guild.member_count, inline=True)
         embed.add_field(name="Level:", value=stats["lvl"], inline=True)
-        embed.add_field(name="Experience:", value=stats["exp"], inline=True)
-        embed.add_field(name="Next Level's Experience:", value=(stats["lvl"] ** self.leveling_factor), inline=True)
+        embed.add_field(name="Level Up Progress", value=f"{round((stats["exp"] / exp_requirement) * 100)}%")
 
         await ctx.send(embed=embed)
 
@@ -41,13 +41,13 @@ class Server(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         stats = self.read_stats(message.guild.id)
-        exp_requirement = stats["lvl"] ** self.leveling_factor
+        exp_requirement = stats["lvl"] * self.leveling_factor
         stats["exp"] += len(message.clean_content)
         
         while stats["exp"] >= exp_requirement:
             stats["exp"] -= exp_requirement
             stats["lvl"] += 1
-            exp_requirement = stats["lvl"] ** 10
+            exp_requirement = stats["lvl"] * 10
 
         self.write_stats(message.guild.id, stats)
 

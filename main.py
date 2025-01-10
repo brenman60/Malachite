@@ -1,4 +1,4 @@
-import bot
+import construct
 import asyncio
 import config
 import os
@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-bot = bot.init()
+bot = construct.init()
 
 # Signifies that the bot is active.
 @bot.event
@@ -29,7 +29,7 @@ async def on_command_error(ctx, error):
 
 # Sets up the bot using setup.py.
 async def main():
-    await bot.run(bot)
+    await construct.run(bot)
     
     async with bot:
         TOKEN = os.getenv("DISCORD_BOT_SECRET")

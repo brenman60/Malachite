@@ -39,7 +39,15 @@ def get_config(id, key):
 
         with open(config_filepath, "r") as file:
             data = json.load(file)
-            return data[id][key]
+            if key in data[id]:
+                return data[id][key]
+            else:
+                with open(default_config_filepath, "r") as default_file:
+                    default_data = json.load(default_file)
+                    if key in default_data:
+                        return default_data[key]
+                    else:
+                        return ""
     except:
         return ""
     
