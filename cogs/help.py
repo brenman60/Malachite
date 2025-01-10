@@ -24,8 +24,8 @@ class Help(commands.Cog):
 
     # Allows user to set, get, or recieve information about this bot's configurations.
     @commands.command(name="config", description="Gets, sets, or displays help information about this bot's config", aliases=["cf"])
-    async def config(self, ctx, action, key, value = None):
-        actions = ["get", "set", "help"]
+    async def config(self, ctx, action, key = None, value = None):
+        actions = ["get", "set" , "list", "help"]
         if action not in actions:
             return await ctx.send(f"Unrecognized action '{action}'.")
         
@@ -42,6 +42,22 @@ class Help(commands.Cog):
                     await ctx.send(f"Successfully changed [{key}].")
                 else:
                     await ctx.send(f"Config option [{key}] not found.")
+            case "list":
+                configs = config.get_configs()
+                if configs != "":
+                    embed = discord.Embed(
+                        title="Configurations",
+                        description="Displays all available configs",
+                        color=discord.Color.blue()
+                    )
+
+                    for config_ in configs:
+                        embed.add_field(name=(configs.index(config_) + 1), value=config_, inline=True)
+
+                    # Change to create embed of all configs
+                    await ctx.send(embed=embed)
+                else:
+                    await ctx.send(f"Couldn't return config list.")
             case "help":
                 await ctx.send(f"[{key}] - {config.config_help[key]}")
             case _:

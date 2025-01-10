@@ -43,6 +43,19 @@ def get_config(id, key):
     except:
         return ""
     
+# Returns a list of all available config values. Returns empty list if error occurs.
+def get_configs():
+    try:
+        configs = []
+        with open(default_config_filepath, "r") as default_file:
+            data = json.load(default_file)
+            for key in data:
+                configs.append(key)
+
+        return configs
+    except:
+        return []
+    
 # Sets a config option in the config.json file. Returns bool based on success, False can only be returned if given key is not already in config.
 def set_config(id, key, val):
     id = str(id)
@@ -54,8 +67,14 @@ def set_config(id, key, val):
     with open(config_filepath, "w") as file:
         if id in data and key in data[id]:
             data[id][key] = val
-        else:
-            return False
-        
+        elif id in data and not key in data[id]:
+            # Config doesn't exist in the file. We should check if it should be, otherwise return nothing
+            with open(default_config_filepath, "r") as default_file:
+                default_config = json.load(default_file)
+                if key in default_config:
+                    data[id][key] = val
+                else:
+                    return False
+                        
         json.dump(data, file, indent=4)
         return True

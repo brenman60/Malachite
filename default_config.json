@@ -1,3 +1,7 @@
 {
-    "prefix": "!"
+    "prefix": "!",
+    "test": "p",
+    "test2": "r",
+    "test3": "5",
+    "test4": "l"
 }
