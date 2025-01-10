@@ -24,6 +24,7 @@ class Help(commands.Cog):
 
     # Allows user to set, get, or recieve information about this bot's configurations.
     @commands.command(name="config", description="Gets, sets, or displays help information about this bot's config", aliases=["cf"])
+    @commands.has_permissions(administrator = True)
     async def config(self, ctx, action, key = None, value = None):
         actions = ["get", "set" , "list", "help"]
         if action not in actions:
