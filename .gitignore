@@ -1,4 +1,5 @@
 /data
+/downloaded
 
 __pycache__/
 *.pyc

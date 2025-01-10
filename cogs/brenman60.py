@@ -1,5 +1,9 @@
 import discord
 from discord.ext import commands
+from urllib.request import urlretrieve
+import os
+import json
+import asyncio
 
 class brenman60(commands.Cog):
     def __init__(self, bot):
@@ -34,6 +38,42 @@ class brenman60(commands.Cog):
         embed.color = discord.Color.blue()
         embed.set_thumbnail(url="https://steamuserimages-a.akamaihd.net/ugc/2354888042055965527/751F2CC84C8EF889315DD53385E52CAB2593A744/?imw=512&&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false")
         await ctx.send(embed=embed)
+
+    # Sends an embed with information about the certification. 
+    @commands.command(name="certification", description="Displays information about one of my certifications", aliases=["cert"])
+    async def certification(self, ctx, *, name):
+        if ctx.author == self.bot.user:
+            return
+        
+        async with ctx.channel.typing():
+            url = (
+                "https://raw.githubusercontent.com/brenman60/portfolio/"
+                "refs/heads/main/public/data/certifications.json"
+            )
+            filename = "downloaded/certifications.json"
+
+            if not os.path.exists("downloaded/"):
+                os.mkdir("downloaded/")
+
+            path, headers = urlretrieve(url, filename)
+            cert_found = False
+            with open(path, "r") as file:
+                cert_data = json.load(file)
+                print(cert_data)
+                for company, company_certs in cert_data:
+                    print(company)
+                    for cert in company_certs:
+                        print("Trying")
+                        print(cert)
+                        print(cert["name"])
+                        print("Did it")
+                        if name == cert["name"]:
+                            cert_found = True
+                            await ctx.send(f"Found cert: {cert_data[name]}")
+                            break
+
+            if not cert_found:
+                await ctx.send(f"Certification '{name}' not found.")                        
 
 async def setup(bot):
     await bot.add_cog(brenman60(bot))
