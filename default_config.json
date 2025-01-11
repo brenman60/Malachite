@@ -1,8 +1,6 @@
 {
     "prefix": "!",
-    "test": "p",
-    "test2": "r",
-    "test3": "5",
-    "test4": "l",
-    "test5": "0"
+    "user_level_factor": "4.5",
+    "server_level_factor": "7.5",
+    "welcome_message_enabled": "True"
 }

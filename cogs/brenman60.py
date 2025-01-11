@@ -56,24 +56,29 @@ class brenman60(commands.Cog):
                 os.mkdir("downloaded/")
 
             path, headers = urlretrieve(url, filename)
-            cert_found = False
             with open(path, "r") as file:
                 cert_data = json.load(file)
-                print(cert_data)
-                for company, company_certs in cert_data:
-                    print(company)
-                    for cert in company_certs:
-                        print("Trying")
-                        print(cert)
-                        print(cert["name"])
-                        print("Did it")
+                
+                cert_found = False
+                for company, company_certs in cert_data.items():
+                    for cert_key, cert in company_certs.items():
                         if name == cert["name"]:
                             cert_found = True
-                            await ctx.send(f"Found cert: {cert_data[name]}")
-                            break
 
-            if not cert_found:
-                await ctx.send(f"Certification '{name}' not found.")                        
+                            embed = discord.Embed()
+                            embed.title = name
+                            embed.color = discord.Color.blue()
+                            embed.url = cert["link"]
+                            embed.add_field(name="Id:", value=cert["id"], inline=True)
+                            embed.add_field(name="Issued:", value=cert["issued"], inline=True)
+
+                            await ctx.send(embed=embed)
+                            break
+                    if cert_found:
+                        break
+                
+                if not cert_found:
+                    await ctx.send("Certificate not found.")                     
 
 async def setup(bot):
     await bot.add_cog(brenman60(bot))

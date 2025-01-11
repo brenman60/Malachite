@@ -6,10 +6,11 @@ from discord.ext import commands
 import asyncio
 import json
 import os
+import config
 
 class User(commands.Cog):
     stats_filepath = os.path.join(os.path.dirname(__file__), "../data/user_stats.json")
-    leveling_factor = 5
+    leveling_factor = 0
 
     def __init__(self, bot):
         self.bot = bot
@@ -17,6 +18,7 @@ class User(commands.Cog):
     # Sends message displaying a user's stats within the Discord server. Users level up by interacting in the server.
     @commands.command(name="stats", description="Displays user [username]'s server stats")
     async def stats(self, ctx, user: Optional[Member]):
+        self.update_level_factor(ctx.guild.id)
         async with ctx.channel.typing():
             await asyncio.sleep(0.5)
         
@@ -29,21 +31,26 @@ class User(commands.Cog):
         else:
             player_stats = {"lvl": 0, "exp": 0}
 
-        exp_requirement = player_stats["lvl"] * self.leveling_factor
+        exp_requirement = player_stats["lvl"] ** self.leveling_factor
+
+        embed_username = user.display_name
+        if embed_username[-1] != "s":
+            embed_username += "'s"
 
         embed = discord.Embed()
-        embed.title = f"{f"{user.display_name}'" if user.display_name[-1] == "s" else f"{user.display_name}'s"} Stats"
+        embed.title = f"{embed_username} Stats"
         embed.color = user.accent_color
         embed.timestamp = datetime.now()
         embed.set_thumbnail(url=user.avatar.url)
         embed.add_field(name="Level:", value=player_stats["lvl"], inline=True)
-        embed.add_field(name="Level Up Progress", value=f"{round((player_stats["exp"] / exp_requirement) * 100)}%")
+        embed.add_field(name="Level Up Progress", value=f"{round((player_stats['exp'] / exp_requirement) * 100)}%")
 
         await ctx.send(embed=embed)
     
     # Listens for user messages in order to input them into the leveling system.
     @commands.Cog.listener()
     async def on_message(self, message):
+        self.update_level_factor(message.guild.id)
         if message.author == self.bot.user:
             return
 
@@ -56,18 +63,18 @@ class User(commands.Cog):
         else:
             player_stats = {"lvl": 0, "exp": 0}
 
-        exp_requirement = player_stats["lvl"] * self.leveling_factor
+        exp_requirement = player_stats["lvl"] ** self.leveling_factor
         player_stats["exp"] += len(message.clean_content)
         
         player_did_levelup = False
         while player_stats["exp"] >= exp_requirement:
             player_stats["exp"] -= exp_requirement
             player_stats["lvl"] += 1
-            exp_requirement = player_stats["lvl"] * self.leveling_factor
+            exp_requirement = player_stats["lvl"] ** self.leveling_factor
             player_did_levelup = True
 
         if player_did_levelup:
-            await message.channel.send(f"{user.mention} is now level {player_stats["lvl"]}!")
+            await message.channel.send(f"{user.mention} is now level {player_stats['lvl']}!")
 
         stats[str(user.id)] = player_stats
 
@@ -99,6 +106,10 @@ class User(commands.Cog):
         current_stats[id] = data
         with open(self.stats_filepath, "w") as file:
             json.dump(current_stats, file, indent=4)
+
+    # Updates the level system's factoring value to match the config
+    def update_level_factor(self, id):
+        self.leveling_factor = float(config.get_config(id, "user_level_factor"))
 
     # Bans a user from the current Discord server. User can only join back once unbanned.
     @commands.command(name="ban", description="Bans user [username]")

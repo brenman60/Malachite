@@ -6,10 +6,11 @@ from discord.ext import commands
 import asyncio
 import json
 import os
+import config
 
 class Server(commands.Cog):
     stats_filepath = os.path.join(os.path.dirname(__file__), "../data/server_stats.json")
-    leveling_factor = 10
+    leveling_factor = 0
 
     def __init__(self, bot):
         self.bot = bot
@@ -17,13 +18,14 @@ class Server(commands.Cog):
     # Sends message containing information about the current Discord server.
     @commands.command(name="server", description="Displays current server's stats")
     async def server(self, ctx):
+        self.update_level_factor(ctx.guild.id)
         async with ctx.channel.typing():
             await asyncio.sleep(0.5)
         
         icon = ctx.guild.icon.url if ctx.guild.icon != None else "https://cdn-icons-png.flaticon.com/512/25/25400.png"
 
         stats = self.read_stats(ctx.guild.id)
-        exp_requirement = stats["lvl"] * self.leveling_factor
+        exp_requirement = stats["lvl"] ** self.leveling_factor
 
         embed = discord.Embed()
         embed.title = f"{ctx.guild.name} Stats"
@@ -33,21 +35,22 @@ class Server(commands.Cog):
         embed.set_thumbnail(url=icon)
         embed.add_field(name="Members:", value=ctx.guild.member_count, inline=True)
         embed.add_field(name="Level:", value=stats["lvl"], inline=True)
-        embed.add_field(name="Level Up Progress", value=f"{round((stats["exp"] / exp_requirement) * 100)}%")
+        embed.add_field(name="Level Up Progress", value=f"{round((stats['exp'] / exp_requirement) * 100)}%")
 
         await ctx.send(embed=embed)
 
     # Listens for user messages in order to input them into the server leveling system.
     @commands.Cog.listener()
     async def on_message(self, message):
+        self.update_level_factor(message.guild.id)
         stats = self.read_stats(message.guild.id)
-        exp_requirement = stats["lvl"] * self.leveling_factor
+        exp_requirement = stats["lvl"] ** self.leveling_factor
         stats["exp"] += len(message.clean_content)
         
         while stats["exp"] >= exp_requirement:
             stats["exp"] -= exp_requirement
             stats["lvl"] += 1
-            exp_requirement = stats["lvl"] * 10
+            exp_requirement = stats["lvl"] ** self.leveling_factor
 
         self.write_stats(message.guild.id, stats)
 
@@ -78,11 +81,15 @@ class Server(commands.Cog):
         with open(self.stats_filepath, "w") as file:
             json.dump(current_stats, file, indent=4)
 
+    # Updates the level system's factoring value to match the config
+    def update_level_factor(self, id):
+        self.leveling_factor = float(config.get_config(id, "server_level_factor"))
+
     # Callback for when new users are added to the current Discord server.
     @commands.Cog.listener()
     async def on_member_join(self, member):
         channel = member.guild.system_channel
-        if channel is not None:
+        if channel is not None and bool(config.get_config(member.guild.id, "welcome_message_enabled")):
             await channel.send(f'Welcome to {member.guild.name}, {member.mention}.')
 
 async def setup(bot):
